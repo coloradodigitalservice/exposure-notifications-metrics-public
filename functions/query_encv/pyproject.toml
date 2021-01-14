@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = "Queries ENCV API and returns JSON data"
+authors = ["Nat Hillard <nathaniel.k.hillard@eop.omb.gov>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.25.1"
+pydantic = {extras = ["dotenv"], version = "^1.7.3"}
+boto3 = "^1.17.14"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.2"
+pylint = "^2.6.0"
+autopep8 = "^1.5.4"
+pytest-coverage = "^0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

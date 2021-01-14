@@ -1,0 +1,50 @@
+version: 0.2
+
+env:
+
+  parameter-store:
+    # the aws creds are not necessary if we use a dedicated build server
+    # and assign an instance profile to it
+    AWS_KEYS_PARAM: cdphe-covidpython-t-access-keys
+
+phases:
+
+  install:
+    commands:
+      # what shell are we using and where are we
+      - "echo \"using shell: $0\""
+      - "echo \"currently in directory: $(pwd)\""
+      - "echo \"home is: $HOME\""
+      - "echo \"contents of home:\""
+      - "ls -la ~"
+
+      # ready the variables
+      - "export AWS_ACCESS_KEY_ID=$(echo $AWS_KEYS_PARAM | awk '{print $2}' | tr -d \"',\")"
+      - "export AWS_SECRET_ACCESS_KEY=$(echo $AWS_KEYS_PARAM | awk '{print $4}' | tr -d \"}'\")"
+      - "export AWS_DEFAULT_REGION=us-east-1"
+
+      # check to make sure access keys are valid - lengths should be 21 and 41 respectively
+      - "echo length of access key is $(echo $AWS_ACCESS_KEY_ID | wc -c)"
+      - "echo length of secret key is $(echo $AWS_SECRET_ACCESS_KEY | wc -c)"
+
+      # # install most recent version of aws cli
+      # - "pip uninstall -y awscli"
+      # - "curl \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"awscliv2.zip\""
+      # - "unzip -q awscliv2.zip"
+      # - "./aws/install"
+      # - "/usr/local/bin/aws --version"
+
+      # # now populate the aws credentials file
+      # - "aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID"
+      # - "aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY"
+      # - "aws configure set default.region $AWS_DEFAULT_REGION"
+
+  build:
+    commands:
+      # deploy the sam template
+      - "echo \"codebuild environment is: $codebuild_environment\""
+      - "sam deploy --config-file sam.toml --template-file ./cdphe-covidpython-t-release.yaml --stack-name cdphe-covidpython-t-sam --no-confirm-changeset --no-fail-on-empty-changeset"
+
+  post_build:
+    commands:
+      - "echo commands completed on `date`"

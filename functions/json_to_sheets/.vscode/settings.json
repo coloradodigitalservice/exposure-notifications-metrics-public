@@ -1,0 +1,8 @@
+{
+    "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
+    "python.linting.pylintPath": "${workspaceFolder}/.venv/bin/pylint",
+    "python.formatting.provider": "autopep8",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "python.testing.pytestEnabled": true
+}

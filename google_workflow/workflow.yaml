@@ -1,0 +1,74 @@
+main:
+  steps:
+    - initVariables:
+        assign:
+          - project: ${sys.get_env("GOOGLE_CLOUD_PROJECT_NUMBER")}
+          - secret: "ENCV_api_key"
+          - version: 1
+          - collection: "encv"
+    - getAPIKey:
+        call: ObtainSecrets
+        args:
+          project: ${project}
+          secret: ${secret}
+          version: ${version}
+        result: encv_api_key
+    - getStats:
+        call: GetENCVStats
+        args:
+          api_key: ${encv_api_key}
+        result: stats
+    - storeInDB:
+        call: ENCVToDB
+        args:
+          stats: ${stats}
+        result: dbResult
+    - final:
+        return: ${dbResult}
+# Subworkflow definitions
+ObtainSecrets:
+  params: [project, secret, version]
+  steps:
+    - getSecret:
+        try:
+          call: googleapis.secretmanager.v1.projects.secrets.versions.access
+          args:
+            name: ${"projects/" + project + "/secrets/" + secret + "/versions/" + string(version)}
+          result: secretResult
+        except:
+          as: e
+          steps:
+            - handleSecretManagerError:
+                switch:
+                  - condition: ${e.code == 404}
+                    raise: "Secret not found"
+                  - condition: ${e.code == 403}
+                    raise: "Error authenticating to Secret Manager"
+            - unhandledException:
+                raise: ${e}
+    - storeSecret:
+        return: ${text.decode(base64.decode(secretResult.payload.data))}
+GetENCVStats:
+  params: [api_key]
+  steps:
+    - getStats:
+        call: http.get
+        args:
+          url: https://adminapi.encv.org/api/stats/realm.json
+          headers:
+            accept: "application/json"
+            x-api-key: ${api_key}
+        result: encv_stats
+    - statsFound:
+        return: ${encv_stats.body.statistics}
+ENCVToDB:
+  params: [stats]
+  steps:
+    - storeInDB:
+        call: http.post
+        args:
+          url: us-central1-co-metrics-workflow.cloudfunctions.net/encv_to_db
+          body: ${stats}
+        result: dbResult
+    - dbLoaded:
+        return: ${dbResult}

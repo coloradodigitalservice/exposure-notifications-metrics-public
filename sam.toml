@@ -1,0 +1,6 @@
+version = 0.2
+[default]
+[default.deploy]
+[default.deploy.parameters]
+confirm_changeset = false
+capabilities = "CAPABILITY_NAMED_IAM"

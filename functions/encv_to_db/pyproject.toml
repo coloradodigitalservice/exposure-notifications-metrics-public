@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = "Takes output of ENCV api and inputs into DB"
+authors = ["Nat Hillard <nathaniel.k.hillard@eop.omb.gov>"]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.10"
+SQLAlchemy = "^1.3.22"
+pydantic = {extras = ["dotenv"], version = "^1.7.3"}
+pandas = "^1.2.1"
+boto3 = "^1.17.14"
+pybigquery = "^0.5.0"
+python-dotenv = "^0.15.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.2"
+pylint = "^2.6.0"
+autopep8 = "^1.5.4"
+importlib-resources = "^5.1.0"
+pytest-coverage = "^0.0"
+pyflakes = "^2.2.0"
+factory-boy = "^3.2.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+

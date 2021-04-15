@@ -1,0 +1,76 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+  branches:
+    include:
+     - main
+  paths:
+    exclude:
+      - highestIDs/*
+      - processed/*
+      - apple_stats/*
+      - twilio-replies/*
+      - azure-pipelines.yml
+
+pool:
+  vmImage: 'ubuntu-latest'
+strategy:
+  matrix:
+    Python38:
+      python.version: '3.8'
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+  displayName: 'Use Python $(python.version)'
+
+#- script: |
+#    pwd
+#    python -m pip install --upgrade pip
+#    pip install pipenv
+#    pipenv install
+#  displayName: 'Install dependencies + pipenv virtual environment'
+
+- task: DockerInstaller@0
+  inputs:
+    dockerVersion: '17.09.0-ce'
+
+- script: |
+    cd encv
+    pip install poetry
+    sed -i "12i \ \ \ \ Default: \"$(ENCVAPIKEY)\"" template.yaml
+  displayName: 'Install poetry & inject encvapikey to sam template'
+
+- task: AWSShellScript@1
+  inputs:
+    awsCredentials: 'cdphe-covidpython-t'
+    regionName: 'us-east-1'
+    arguments: ''
+    scriptType: 'inline'
+    inlineScript: |
+      cd encv
+      echo "run make - performing sam build..."
+      make clean
+      make build
+      echo "performing sam package..."
+      cat .aws-sam/build.toml >> sam.toml
+      sam package --config-file sam.toml --s3-bucket YOUR_S3_BUCKET_NAME --force-upload --template-file .aws-sam/build/template.yaml --region us-east-1 --output-template-file my_output_template.yaml
+      mkdir release
+      cp sam.toml buildspec.yml cdphe-covidpython-t-release.yaml release
+  displayName: 'perform sam package for test'
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)/release'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/sam_$(artifactname).zip'
+    replaceExistingArchive: true
+  displayName: 'package toml and yml files for deployment'
+
+- publish: $(Build.ArtifactStagingDirectory)/sam_$(artifactname).zip
+  displayName: 'Create Artifact'
+  artifact: sam_$(artifactname)

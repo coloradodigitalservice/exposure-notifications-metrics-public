@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = "Exports Postgres DB to JSON"
+authors = ["Nat Hillard <nathaniel.k.hillard@eop.omb.gov>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+SQLAlchemy = "^1.3.22"
+pydantic = {extras = ["dotenv"], version = "^1.7.3"}
+aws-psycopg2 = "^1.2.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.2"
+pylint = "^2.6.0"
+autopep8 = "^1.5.4"
+pytest-coverage = "^0.0"
+factory-boy = "^3.2.0"
+psycopg2-binary = "^2.8.6"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

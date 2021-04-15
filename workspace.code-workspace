@@ -1,0 +1,42 @@
+{
+  "folders": [
+    {
+      "path": "functions/db_to_json"
+    },
+    {
+      "path": "functions/encv_to_db"
+    },
+    {
+      "path": "functions/json_to_sheets"
+    },
+    {
+      "path": "functions/query_encv"
+    },
+    {
+      "path": "functions/encv_to_bq"
+    },
+    {
+      "path": "statemachine"
+    }
+  ],
+  "settings": {
+    "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
+    "python.linting.pylintPath": "${workspaceFolder}/.venv/bin/pylint",
+    "python.formatting.provider": "autopep8",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "python.testing.pytestEnabled": true
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Python: Current File",
+        "type": "python",
+        "request": "launch",
+        "program": "${file}",
+        "console": "integratedTerminal"
+      }
+    ]
+  }
+}

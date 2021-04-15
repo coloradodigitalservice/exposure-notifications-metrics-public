@@ -1,0 +1,27 @@
+{
+    "Comment": "A metrics pipeline for gathering data from the ENCV API",
+    "StartAt": "Get Data from ENCV API",
+    "States": {
+        "Get Data from ENCV API": {
+            "Type": "Task",
+            "Resource": "${GetENCVDataFunctionArn}",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 15,
+                    "MaxAttempts": 5,
+                    "BackoffRate": 1.5
+                }
+            ],
+            "Next": "Store in DB"
+        },
+        "Store in DB": {
+            "Type": "Task",
+            "InputPath": "$.body.data",
+            "Resource": "${ENCVToDBFunctionArn}",
+            "End": true
+        }
+    }
+}

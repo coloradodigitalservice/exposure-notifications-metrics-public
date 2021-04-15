@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  EN Metrics
+
+  Metrics Automation for the Exposure Notification system.
+
+Parameters:
+  ENCVAPIKey:
+    Type: String
+    Description: the API key for the ENCV API
+
+Resources:
+  COMetricsStateMachine:
+    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+    Properties:
+      DefinitionUri: statemachine/metrics.asl.json
+      DefinitionSubstitutions:
+        GetENCVDataFunctionArn: !GetAtt GetENCVDataFunction.Arn
+        ENCVToDBFunctionArn: !GetAtt ENCVToDBFunction.Arn
+        DBToJSONFunctionArn: !GetAtt DBToJSONFunction.Arn
+        JSONToSheetsFunctionArn: !GetAtt JSONToSheetsFunction.Arn
+      Events:
+        DailyPollingSchedule:
+          Type: Schedule # More info about Schedule Event Source: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-statemachine-schedule.html
+          Properties:
+            Description: Schedule to run the ENCV poll every 24 hours
+            Enabled: True
+            Schedule: "rate(12 hours)"
+      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - LambdaInvokePolicy:
+            FunctionName: !Ref GetENCVDataFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ENCVToDBFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref DBToJSONFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref JSONToSheetsFunction
+  GetENCVDataFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
+    Properties:
+      CodeUri: functions/query_encv/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref ENCVAPISecret
+
+  ENCVToDBFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
+    Properties:
+      CodeUri: functions/encv_to_db/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Timeout: 300 # Note: this function generally takes a long time to run. We need to really pad the timeout.
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref GOOGLECREDENTIALS
+
+  DBToJSONFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/db_to_json/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+
+  JSONToSheetsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/json_to_sheets/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Timeout: 10 # Note : we must increase this to account for slower return times when running this function on AWS
+
+  ENCVAPISecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: "prod/co_metrics/api_keys/encv"
+      Description: The API key for the ENCV API
+      SecretString: !Sub '{"key": "${ENCVAPIKey}"}'
+
+  GOOGLECREDENTIALS:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: "YOUR_AWS_SECRET_NAME_CONTAINING_GOOGLE_CREDENTIALS"
+      Description: The GOOGLE_APPLICATION_CREDENTIALS JSON for the service account

@@ -1,7 +1,10 @@
 # COVID-19 Exposure Notification Apps - Metrics Aggregation Tools
 _Contributors: Nat Hillard, Steve Leibman, Chris Pimlott, Thad Batt, Michelle Park, Janell Schafer, Kelly Taylor_
 
-This repository was created by the Colorado Digital Service to provide a general purpose framework for pulling data from an arbitrary set of providers, applying transformations, and pushing the results to consumers of the information.
+## Background
+This repository was created by the Colorado Digital Service to automatically consolidate analytics for the Exposure Notifications system. [Exposure Notifications](https://www.google.com/covid19/exposurenotifications/) is a service created by Apple and Google to notify people who may have been exposed to someone who tested positive for COVID-19. To inform and improve the service, this repository provides a general purpose framework for states and other organizations to automatically fetch Exposure Notifications metrics for their jurisdiction across a set of data sources, aggregate these metrics into a single database, and write consolidated metrics into a viewable Google sheet. Please note that we are currently not accepting pull requests.
+
+## Overview
 The code here is written in python, and makes use of [AWS Step Functions](https://aws.amazon.com/step-functions/) to orchestrate work on a scheduled basis with predefined triggers and dependencies.
 It was initially designed to pull data from the following sources:
 * An API for an Association of Public Health Laboratories (APHL) key server, with statistics for the number of Exposure Notification (EN) App "codes issued"
@@ -42,7 +45,7 @@ It currently uses the `realm` statistics, defined above as:
    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
    python get-pip.py
    ```
-1. Install the AWS SAM CLI using the instructions at https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html On Mac OSX if you already have Homebrew, this would be:
+2. Install the AWS SAM CLI using the instructions at https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html On Mac OSX if you already have Homebrew, this would be:
    ```sh
    brew tap aws/tap
    brew install aws-sam-cli
@@ -54,7 +57,7 @@ It currently uses the `realm` statistics, defined above as:
    sudo ./sam-installation/install
    sam --version
    ```
-1. Install Poetry using the instructions at https://python-poetry.org/docs/ . On Mac OSX, this will be:
+3. Install Poetry using the instructions at https://python-poetry.org/docs/ . On Mac OSX, this will be:
    ```sh
    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
    source $HOME/.poetry/env
@@ -63,7 +66,7 @@ It currently uses the `realm` statistics, defined above as:
    ```sh
    pip3 install poetry
    ```
-1. Install Docker. See: https://docs.docker.com/get-docker/
+4. Install Docker. See: https://docs.docker.com/get-docker/
    ```sh
    sudo yum update -y
    sudo amazon-linux-extras install docker
@@ -71,7 +74,7 @@ It currently uses the `realm` statistics, defined above as:
    sudo usermod -a -G docker ec2-user
    docker ps
    ```
-3. Build requirements files and containers:
+5. Build requirements files and containers:
    ```sh
    cd <directory_with_this_README>
    make
